@@ -29,9 +29,9 @@ void SunBar :: render(RenderWindow &window)
 
 }
 
-void SunBar :: update()
+void SunBar :: update(int plusMinus)
 {
-    value+=10;
+    value+=plusMinus;
     stringstream ss;
     ss << value;
     string numberString = ss.str();

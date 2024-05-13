@@ -1,3 +1,5 @@
+#pragma once
+
 #include "global.hpp"
 
 
@@ -9,13 +11,15 @@ public:
     ~Sun();
     void render(RenderWindow &window);
     void update();
-    FloatRect getBound(){return sprite.getGlobalBounds();}
-    bool isClicked = false;
     bool isOut(Vector2u windowSize);
+    bool contains(Vector2i pos);
+    bool isClicked(){return clickOrNot;}
+    void clicked();
 
 private:
     float const speed = 1;
     Texture texture;
     Sprite sprite;
     Vector2f pos;
+    bool clickOrNot = false;
 };

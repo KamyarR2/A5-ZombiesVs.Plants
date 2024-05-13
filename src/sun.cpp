@@ -36,3 +36,17 @@ bool Sun :: isOut(Vector2u windowSize)
         }
    return false;
 }
+
+bool Sun :: contains(Vector2i pos)
+{
+    FloatRect bounds = sprite.getGlobalBounds();
+    return(pos.x >= bounds.left && pos.y >= bounds.top &&
+                    pos.x <= (bounds.left + bounds.width) &&
+                    pos.y <= (bounds.top + bounds.height));
+}
+
+
+void Sun :: clicked()
+{
+    clickOrNot = true;
+}

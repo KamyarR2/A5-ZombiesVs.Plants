@@ -1,3 +1,5 @@
+#pragma once
+
 #include "global.hpp"
 #include "player.hpp"
 #include "handler.hpp"
@@ -6,6 +8,7 @@
 enum State
 {
     IN_GAME,
+    GAME_OVER,
     EXIT
 };
 
@@ -23,6 +26,11 @@ private:
     State state;
     Texture backgroundTexture;
     Sprite backgroundSprite;
+
+    Texture gameOverTexture;
+    Sprite gameOverSprite;
+
+    Shader shader;
     int frameRate;
     void render();
     void update();

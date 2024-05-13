@@ -8,7 +8,17 @@ System :: System(int width, int height, int frameRate){
         {
             return;
         }
+    if (!gameOverTexture.loadFromFile("../Pics/GameOver.png"))
+        {
+            return;
+        }
+    
+    gameOverSprite.setTexture(gameOverTexture);
+    gameOverSprite.setPosition((topLeft[0] + downRight[0])/3, (topLeft[1] + downRight[1])/5);
+
     backgroundSprite.setTexture(backgroundTexture);
+
+
     player = new Player(Mouse::getPosition().x, Mouse::getPosition().y);
     handler = new Handler(player);
     state = IN_GAME;
@@ -23,9 +33,9 @@ System :: ~System(){
 void System :: run(){
     while (window.isOpen() && state != EXIT)
     {
-        render();
         update();
         handleEvents();
+        render();
     }
 }
 
@@ -33,8 +43,14 @@ void System :: render()
 {
     window.clear();
     window.draw(backgroundSprite);
+
     handler->render(window);
     player->render(window);
+    if(handler->isGameOver()){
+        window.draw(gameOverSprite);
+        backgroundSprite.setColor(grey);
+        state = EXIT;
+    }
     window.display();
 }
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "global.hpp"
 
 
@@ -7,7 +9,8 @@ public:
     SunBar(int x, int y, int v, string address);
     ~SunBar();
     void render(RenderWindow &window);
-    void update();
+    void update(int plusMinus);
+    int sunMoney(){return value;}
 private:
     Texture texture;
     Sprite sprite;
