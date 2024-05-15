@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra -Werror
 LFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
-EXE = game.out
+EXE = pvz.out
 SRC_DIR := ./src
 HEAD_DIR := ./include
 MEDIA_DIR = ./Media
