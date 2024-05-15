@@ -3,8 +3,7 @@
 
 Sun :: Sun(int x, int y)
 {
-   Vector2i pos = {x,y};
-   if (!texture.loadFromFile("../Pics/Sun.png"))
+    if (!texture.loadFromFile(PICS_PATH + "Sun.png"))
         {
             return;
         }
@@ -24,6 +23,7 @@ void Sun :: render(RenderWindow &window){
 void Sun :: update(){
       sprite.setPosition(sprite.getPosition().x, sprite.getPosition().y+speed);
 }
+
 
 bool Sun :: isOut(Vector2u windowSize)
 {

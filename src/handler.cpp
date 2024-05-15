@@ -3,18 +3,19 @@
 Handler ::Handler(Player *p)
 {
     player = p;
-    sunBar = new SunBar(140, 0, 1000, "sunBar.png");
-    seedCards.push_back(new SeedCard(0, 0, 120, "SnowPea.png", "SnowPeaGray.png","Snowpea.png", "Icepea.png"));
-    seedCards.push_back(new SeedCard(0, 80, 50, "Sunflower.png", "SunflowerGray.png", "Sunflower.png"));
-    seedCards.push_back(new SeedCard(0, 2 * 80, 50, "Wallnut.png", "WallnutGray.png", "Wallnut.png"));
-    seedCards.push_back(new SeedCard(0, 3 * 80, 100, "peashooter.png", "peashooterGray.png", "peashooter.png", "Pea.png"));
-    seedCards.push_back(new SeedCard(0, 4 * 80, 100, "MelonPult.png", "MelonPultGray.png", "Melonpult.png"));
+    zombieHandler = new HandleZombie();
+    clock.restart();
+    sunBar = new SunBar(140, 0, INIT_SUN, "sunBar.png");
+    seedCards.push_back(new SeedCard(0, 0, SNOWPEA_PRICE, SNOWPEA_COOL_TIME, SNOWPEA_HEALTH, SNOWPEA_DAMAGE, SNOWPEA_SPEED, SNOWPEA_HIT_RATE, "SnowPea.png", "SnowPeaGray.png","Snowpea.png", "Icepea.png"));
+    seedCards.push_back(new SeedCard(0, 80, SUNFLOWER_PRICE, SUNFLOWER_COOL_TIME, SUNFLOWER_HEALTH, SUNFLOWER_DAMAGE, SUNFLOWER_SPEED, SUNFLOWER_HIT_RATE, "Sunflower.png", "SunflowerGray.png", "Sunflower.png"));
+    seedCards.push_back(new SeedCard(0, 2 * 80, WALLNUT_PRICE, WALLNUT_COOL_TIME, WALLNUT_HEALTH, WALLNUT_DAMAGE, WALLNUT_SPEED, WALLNUT_HIT_RATE, "Wallnut.png", "WallnutGray.png", "Wallnut.png"));
+    seedCards.push_back(new SeedCard(0, 3 * 80, PEA_PRICE, PEA_COOL_TIME, PEA_HEALTH, PEA_DAMAGE, PEA_SPEED, PEA_HIT_RATE,"peashooter.png", "peashooterGray.png", "peashooter.png", "Pea.png"));
+    seedCards.push_back(new SeedCard(0, 4 * 80, MELONPULT_PRICE, MELONPULT_COOL_TIME, MELON_HEALTH, MELON_DAMAGE, MELON_SPEED, MELON_HIT_RATE,"MelonPult.png", "MelonPultGray.png", "Melonpult.png"));
 
     for(int j=0; j<COL_NUM; j++){
         for(int i=0; i<ROW_NUM; i++){
             auto xPos = stepHorizontal*j+topLeft[0];
             auto yPos = stepVertical*i+topLeft[1];
-            // cout << xPos << " " << yPos<<endl;
             Vector2f position(static_cast<float>(xPos), static_cast<float>(yPos));
             Vector2f size(static_cast<float>(stepHorizontal), static_cast<float>(stepVertical));
             FloatRect rect(position, size);
@@ -37,86 +38,77 @@ Handler ::~Handler()
 
 void Handler :: update(RenderWindow &window)
 {
-    clock++;
     unlockPlant();
 
     Vector2i pos = Mouse ::getPosition(window);
-    
 
+    for(auto tile : tiles)
+    {
+        tile->update();
+    }
+    
     for (auto sun : suns)
     {
         sun->update();
     }
-    for(auto zombie : zombies)
+    zombieHandler->addZombie(window);
+    zombieHandler->update();
+
+    for(auto seedCard : seedCards)
     {
-        zombie->update();
-    }
-    for(auto projectile : projectiles)
-    {
-        projectile->update();
+        seedCard->update();
     }
     for(auto plant : plants)
     {
-        if(!plant->isAlive() && plant->isPlanted() && plant->canShoot()){
+        if(!plant->isDead() && plant->isPlanted() && plant->canShoot()){
             FloatRect bounds = plant->getSpriteRect();
             Vector2f pos = {bounds.left + bounds. width, bounds.top};
-            addProjectile(window, pos, plant->getProjAddress());
+            Projectile* projectile = plant->addProjectile(pos, plant->getProjAddress());
+            if(projectile != nullptr)
+            {
+                plant->resetClock();
+            }
+        }
+
+        
+        else if(plant->isFlower() && plant->isPlanted())
+        {
+                Sun *sun = plant->addSun();
+                if(sun != nullptr)
+                {
+                    suns.push_back(sun);
+                    plant->resetSunClock();
+                }
         }
         plant->update(pos);
     }
 
-    checkGameOver();
-    addZombie(window);
-    addSun(window);
+
+    
+    if(zombieHandler->checkGameOver())
+        gameOver = true;
+    if(zombieHandler->checkWin())
+        win = true;
+    addSun();
     deleteOutOfBound(window);
-    deleteIsClicked(window);
-    handlerCollision(window);
+    deleteIsClicked();
+    handleCollision();
 }
 
-void Handler :: addProjectile(RenderWindow &window, Vector2f pos, string address)
+
+void Handler :: addSun()
 {
-        if(clock%60 == 0){
-            int time = clock/60;
-            if((time%4) == 0){
-                Projectile *projectile = new Projectile(pos.x,pos.y, address);
-                projectiles.push_back(projectile);
-            }
-        }
-    }
-
-
-
-
-void Handler :: addZombie(RenderWindow &window)
-{
-    if(clock% 60 == 0){
-        time = clock/60;
-        if((time % 3) == 0){
-            int xZombie = window.getSize().x;
-            int randomRow = rand() % 5;
-            int yZombie = downRight[1] - ((randomRow) * stepVertical);
-            Zombie *zombie = new Zombie(xZombie,yZombie,"Giant.png");
-            zombies.push_back(zombie);
-        }
-    }
-}
-
-void Handler ::addSun(RenderWindow &window)
-{
-    if (clock % 60 == 0)
-    {
-        time = clock / 60;
-        if ((time % 4) == 0)
-        {
-            int xSun = std::rand() % window.getSize().x;
-            int ySun = 0;
+    float xSun = std::rand() % (downRight[0] - topLeft[0]);
+    float ySun = 0;
+    float elapsedTime = clock.getElapsedTime().asSeconds();   
+    if((elapsedTime >= SYSTEM_SUN_RATE)){
             Sun *sun = new Sun(xSun, ySun);
             suns.push_back(sun);
+            clock.restart();
         }
-    }
 }
 
-void Handler ::render(RenderWindow &window)
+void Handler :: render(RenderWindow &window)
 {
     for (auto seedCard : seedCards)
     {
@@ -128,21 +120,15 @@ void Handler ::render(RenderWindow &window)
     }
     for(auto tile : tiles)
     {
-        tile->render(window);
+        tile->render();
     }
     sunBar->render(window);
-    for (auto zombie : zombies)
-    {
-        zombie->render(window);
-    }
+
     for (auto sun : suns)
     {
         sun->render(window);
     }
-    for(auto projectile : projectiles)
-    {
-        projectile->render(window);
-    }
+    zombieHandler->render(window);
 }
 
 void Handler :: handleMousePressed(Vector2i pos)
@@ -152,31 +138,37 @@ void Handler :: handleMousePressed(Vector2i pos)
         if (sun->contains(pos))
         {
             sun->clicked();
-            sunBar->update(+10);
+            sunBar->update(SUN_VALUE);
         }
     }
 
     for (auto seedCard : seedCards)
     {
-        if (seedCard->contains(pos) && !seedCard->isLocked())
+        if (seedCard->contains(pos) && !seedCard->isLocked() && !seedCard->isCoolDown())
         {
-                // cout << seedCard->getProjAddress() <<endl;
-                addPlant(pos, seedCard->getPlantAdress(), seedCard->getValue(), seedCard->getProjAddress());
+                selectedSeedCard = seedCard;
+                addPlant(pos ,seedCard->getValue(), seedCard->getHealth(), seedCard->getDamage(), 
+                        seedCard->getSpeed(), seedCard->getHitRate(), seedCard->getPlantAdress(), 
+                        seedCard->getProjAddress());
         }
     }
 }
 
-void Handler ::handleMouseReleased(Vector2i pos)
+void Handler ::handleMouseReleased()
 {
     vector <Plant*> trash;
     for (auto plant : plants)
     {
         for(auto tile : tiles){
+
             if(tile->isInside(plant->getSpriteRect()) && !tile->isPlanted()){
+                tile->seed(plant);
                 plant->stopDrag(tile->tileCenter());
-                tile->seed();
                 plant->planted();
                 sunBar->update(-plant->getValue());
+                selectedSeedCard->resetClock();
+                plant->letSeedCardKnow(selectedSeedCard);
+                selectedSeedCard = nullptr; 
                 break;
             }
         }
@@ -214,42 +206,14 @@ void Handler ::deleteOutOfBound(RenderWindow &window)
     {
         delete sun;
     }
-
-    vector <Projectile*> ProjTrash;
-
-    for(auto projectile : projectiles){
-        if(projectile->isOut(windowSize)){
-            ProjTrash.push_back(projectile);
-        }
+    for(auto plant : plants)
+    {
+        plant->deleteOutOfBound(windowSize);
     }
-    projectiles.erase(remove_if(projectiles.begin(), projectiles.end(), [windowSize](Projectile* projectile) {
-        return projectile->isOut(windowSize);}), projectiles.end());
-
-    for(auto projectile : ProjTrash) {
-        delete projectile;
-    }
+    
 }
 
-void Handler :: checkGameOver()
-{
-    vector <Zombie*> zombieTrash;
-
-    for(auto zombie : zombies){
-        if(zombie->isOut()){
-            gameOver = true;
-            zombieTrash.push_back(zombie);
-        }
-    }
-    zombies.erase(remove_if(zombies.begin(), zombies.end(), [](Zombie* zombie) {
-        return zombie->isOut();}), zombies.end());
-
-    for(auto zombie : zombieTrash) {
-        delete zombie;
-    }
-
-}
-
-void Handler ::deleteIsClicked(RenderWindow &window)
+void Handler ::deleteIsClicked()
 {
     vector<Sun*> trash;
     for (auto sun : suns)
@@ -280,43 +244,17 @@ void Handler ::unlockPlant()
 }
 
 
-void Handler :: addPlant(Vector2i pos, string address, int value, string projAddress)
+void Handler :: addPlant(Vector2i pos, float value, float health, float damage, float speed, float hitRate, string address, string projAddress)
 {
-    // cout << projAddress.empty()<<endl;
     Vector2f mousePos = {static_cast<float>(pos.x), static_cast<float>(pos.y)};
-    Plant *plant = new Plant(mousePos.x, mousePos.y, address, value, projAddress);
+    Plant *plant = new Plant(mousePos.x, mousePos.y, value, health, damage, speed, hitRate, address, projAddress);
     plant -> startDrag();
     plants.push_back(plant);
 }
 
-void Handler :: handlerCollision(RenderWindow &window){
-    vector <Projectile*> trashProj;
-    vector <Zombie*> trashZombie;
-    for (auto zombie : zombies){
-        for (auto projectile:projectiles){
-            FloatRect projBound = projectile->getBound();
-            FloatRect zombieBound = zombie->getInnerRect();
-            if(projBound.intersects(zombieBound)){
-                projectile->Delete();
-                trashProj.push_back(projectile);
-                zombie->Delete();
-                trashZombie.push_back(zombie);
-            }
-        }
-    }
-    projectiles.erase(remove_if(projectiles.begin(), projectiles.end(), [](Projectile *projectile)
-                         { return projectile->isDelete(); }),projectiles.end());
 
-    for (auto projectile : trashProj)
-    {
-        delete projectile;
-    }
-    zombies.erase(remove_if(zombies.begin(), zombies.end(), [](Zombie *zombie)
-                         { return zombie->isDelete(); }),zombies.end());
-
-    for (auto zombie : trashZombie)
-    {
-        delete zombie;
-    }
+void Handler :: handleCollision()
+{
+    zombieHandler->deleteCollision(plants);
 }
 

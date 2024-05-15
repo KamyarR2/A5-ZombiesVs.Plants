@@ -2,6 +2,7 @@
 
 #include "global.hpp"
 #include "player.hpp"
+#include "handleZombie.hpp"
 #include "sun.hpp"
 #include "sunBar.hpp"
 #include "seedCards.hpp"
@@ -19,12 +20,12 @@ public:
     void update(RenderWindow &window);
     void render(RenderWindow &window);
     void handleMousePressed(Vector2i pos);
-    void handleMouseReleased(Vector2i pos);
-    void handlerCollision(RenderWindow &window);
+    void handleMouseReleased();
+    void handleCollision();
     void unlockPlant();
-    void addPlant(Vector2i pos, string address, int value, string projAddress);
-    void checkGameOver();
+    void addPlant(Vector2i pos, float value, float health, float damage, float speed, float hitRate, string address, string projAddress);
     bool isGameOver(){return gameOver;}
+    bool isWin(){return win;}
     
 private:
     Player *player;
@@ -34,21 +35,22 @@ private:
     vector <Tile*> tiles;
     vector <Zombie*> zombies;
     vector <Projectile*> projectiles;
+    vector <Zombie*> zombieTrash;
+    HandleZombie *zombieHandler;
+
+    SeedCard *selectedSeedCard = nullptr;
 
 
 
 
     SunBar *sunBar;
     void deleteOutOfBound(RenderWindow &window);
-    void deleteIsClicked(RenderWindow &window);
-    void deleteReleased(RenderWindow &window);
-    void deletePlant();
-    void addSun(RenderWindow &window);
-    void addZombie(RenderWindow &window);
-    void addProjectile(RenderWindow &window, Vector2f pos, string address);
+    void deleteIsClicked();
+    void addSun();
     
-    int clock = 0;
+    Clock clock;
     int time = 0;
     bool isDragged = false;
     bool gameOver = false;
+    bool win = false;
 };

@@ -1,15 +1,15 @@
 #include "../include/projectile.hpp"
 
-Projectile :: Projectile(int x, int y, string address)
+Projectile :: Projectile(int x, int y, float s, string address)
 {
-   Vector2i pos = {x,y};
-   if (!texture.loadFromFile("../Pics/Projectile/" + address))
+   if (!texture.loadFromFile(PICS_PATH + "/Projectile/" + address))
         {
             return;
         }
     sprite.setTexture(texture);
     sprite.setScale(1,1);
     sprite.setPosition(x,y);
+    speed = s;
 }
 
 Projectile :: ~Projectile(){}
@@ -26,7 +26,7 @@ bool Projectile :: isOut(Vector2u windowSize)
 {
    FloatRect bounds = sprite.getGlobalBounds();
    if (bounds.left + bounds.width < 0 || 
-            bounds.left > windowSize.x ||
+            bounds.left > 3*windowSize.x/4 ||
             bounds.top + bounds.height < 0 ||
             bounds.top > windowSize.y) {
       return true;

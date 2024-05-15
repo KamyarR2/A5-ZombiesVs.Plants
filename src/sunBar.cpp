@@ -3,8 +3,8 @@
 
 SunBar :: SunBar(int x, int y, int v, string address)
 {
-    if (!texture.loadFromFile("../Pics/"+address)){return;}
-    if (!font.loadFromFile("../Fonts/HouseofTerror.ttf")) {return;}
+    if (!texture.loadFromFile(PICS_PATH + address)){return;}
+    if (!font.loadFromFile(FONTS_PATH + "HouseofTerror.ttf")) {return;}
     value = v;
     sprite.setTexture(texture);
     sprite.setPosition(x,y);

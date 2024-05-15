@@ -8,20 +8,14 @@ Tile :: Tile(FloatRect rect)
 }
 
 
-void Tile :: seed()
-{
-    PlantedOrNot = true;
-}
-
-void Tile :: render(RenderWindow &window)
+void Tile :: render()
 {
     RectangleShape rect(sf::Vector2f(rectangle.width, rectangle.height));
     rect.setPosition(rectangle.left, rectangle.top);
     rect.setFillColor(sf::Color::Transparent); 
     rect.setOutlineColor(sf::Color::Red); 
     rect.setOutlineThickness(2);
-
-    //window.draw(rect);
+        // window.draw(rect);
 }
 
 bool Tile :: isInside(FloatRect plantRect)
@@ -41,6 +35,17 @@ bool Tile :: isInside(FloatRect plantRect)
 
 }
 
+void Tile :: update()
+{
+    if(plantInTile)
+    {
+        if(plantInTile->isDead())
+        {
+            free();
+        }
+    }
+}
+
 Vector2f Tile :: tileCenter()
 {
     float centerX = rectangle.left + rectangle.width/2;
@@ -48,4 +53,18 @@ Vector2f Tile :: tileCenter()
 
     Vector2f plantCenter = Vector2f(centerX, centerY);
     return plantCenter;
+}
+
+
+void Tile :: free()
+{
+    PlantedOrNot = false;
+    plantInTile = nullptr;
+
+}
+
+void Tile :: seed(Plant* plant)
+{
+    PlantedOrNot = true;
+    plantInTile = plant;
 }

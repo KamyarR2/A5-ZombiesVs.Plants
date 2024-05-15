@@ -4,7 +4,7 @@
 Player :: Player(int x, int y)
 {
     pos = Vector2f(x,y);
-    if (!texture.loadFromFile("../Pics/CursorPressed.png")){return;}
+    if (!texture.loadFromFile(PICS_PATH + "CursorPressed.png")){return;}
     sprite.setTexture(texture);
     sprite.setScale(0.5,0.5);
 }

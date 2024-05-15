@@ -2,22 +2,31 @@
 
 
 
-SeedCard :: SeedCard(int x, int y, int v, string address, string grayAddress, string plantA, string projA)
+SeedCard :: SeedCard(int x, int y, float v, float ct, float h, float d, float s, float hrate, string address, string grayAddress, string plantA, string projA)
 {
-    if (!texture.loadFromFile("../Pics/SeedPackets/"+address)){return;}
+    coolDownTime = ct;
+    plantAddress  = plantA;
+    projAddress = projA;
+    value = v;
+    health = h;
+    damage = d;
+    speed = s;
+    hitRate = hrate;
+    
+
+    if (!texture.loadFromFile(PICS_PATH + "SeedPackets/"+address)){return;}
     
     sprite.setScale(0.5,0.5);
     sprite.setTexture(texture);
     sprite.setPosition(x,y);
 
-    if (!grayTexture.loadFromFile("../Pics/SeedPackets/"+grayAddress)){return;}
+    if (!grayTexture.loadFromFile(PICS_PATH + "SeedPackets/"+grayAddress)){return;}
     
     graySprite.setScale(0.5,0.5);
     graySprite.setTexture(grayTexture);
     graySprite.setPosition(x,y);
 
-    if (!font.loadFromFile("../Fonts/HouseofTerror.ttf")) {return;}
-    value = v;
+    if (!font.loadFromFile(FONTS_PATH + "HouseofTerror.ttf")) {return;}
     text.setPosition(sprite.getPosition().x+texture.getSize().x/3.3,sprite.getPosition().y+texture.getSize().y/4);
     text.setFont(font);
     text.setCharacterSize(32);
@@ -27,8 +36,18 @@ SeedCard :: SeedCard(int x, int y, int v, string address, string grayAddress, st
     ss << value;
     string numberString = ss.str();
     text.setString(numberString);
-    plantAddress  = plantA;
-    projAddress = projA;
+
+
+    timeText.setPosition(sprite.getPosition().x,sprite.getPosition().y);
+    timeText.setFont(font);
+    timeText.setCharacterSize(25);
+    timeText.setFillColor(Color::Yellow);
+
+    stringstream ssTime;
+    ssTime << fixed <<setprecision(1) <<coolDownTime - elapsedTime;
+    string timeString = ssTime.str();
+    timeText.setString(timeString);
+
 }
 
 SeedCard :: ~SeedCard(){}
@@ -40,14 +59,30 @@ void SeedCard :: render(RenderWindow &window)
         window.draw(graySprite);
         window.draw(text);
     }
+
+    else if (coolDown)
+    {
+        stringstream ssTime;
+        ssTime << fixed << setprecision(1) << coolDownTime - elapsedTime;
+        string timeString = ssTime.str();
+        timeText.setString(timeString);
+        window.draw(graySprite);
+        window.draw(timeText);
+        window.draw(text);
+    }
     else{
         window.draw(sprite);
         window.draw(text);
     }
 }
 
-void SeedCard :: update(Vector2i pos)
+void SeedCard :: update()
 {
+    if(coolDown){
+        elapsedTime = clock.getElapsedTime().asSeconds(); 
+        if(elapsedTime >= coolDownTime)
+            coolDown = false;
+    } 
 }
 
 bool SeedCard :: contains(Vector2i pos)
@@ -66,4 +101,12 @@ void SeedCard :: checkAndUnlock(int sunMoney)
     else
         lockOrUnlock = true;
 }
+
+void SeedCard :: resetClock()
+{
+    clock.restart();
+    elapsedTime = 0;
+}
+
+
 

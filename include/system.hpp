@@ -3,12 +3,16 @@
 #include "global.hpp"
 #include "player.hpp"
 #include "handler.hpp"
+#include "screen.hpp"
+
 
 
 enum State
 {
+    MENU,
     IN_GAME,
     GAME_OVER,
+    WIN,
     EXIT
 };
 
@@ -23,18 +27,24 @@ public:
 private:
     Player* player;
     Handler* handler;
+    Screen* menuScreen;
+    Screen* gameScreen;
+    Screen* inGameMenuScreen;
     State state;
     Texture backgroundTexture;
     Sprite backgroundSprite;
 
+    Music music;
     Texture gameOverTexture;
     Sprite gameOverSprite;
-
-    Shader shader;
+    Texture winTexture;
+    Sprite winSprite;
+ 
     int frameRate;
-    void render();
+    void render(RenderWindow &window);
     void update();
     void handleEvents();
+    
     void handleMousePressed(Event event);
     void handleMouseReleased(Event event);
 };

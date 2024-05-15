@@ -4,7 +4,7 @@
 class Projectile
 {
 public:
-    Projectile(int x, int y, string address);
+    Projectile(int x, int y, float s, string address);
     ~Projectile();
     void render(RenderWindow &window);
     void update();
@@ -13,7 +13,7 @@ public:
     bool isDelete(){return DelOrNot;}
     void Delete(){DelOrNot = true;}
 private:
-    float const speed = 0.8;
+    float speed;
     string address;
     Texture texture;
     Sprite sprite;
